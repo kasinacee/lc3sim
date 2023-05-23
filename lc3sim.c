@@ -1,5 +1,5 @@
 #include "lc3sim.h"
-
+//small test change
 
 void lc3_init(lc3_machine_state * lc3) {
 	lc3->memory = (uint16_t *)malloc(LC3_MEMORY_ADDRESSABILITY*LC3_MEMORY_SIZE);
