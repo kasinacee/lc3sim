@@ -3,6 +3,7 @@
 
 void lc3_init(lc3_machine_state * lc3) {
 	lc3->memory = (uint16_t *)malloc(LC3_MEMORY_ADDRESSABILITY*LC3_MEMORY_SIZE);
+	lc3->pc     = LC3_ENTRY_POINT;
   
 }
 
@@ -94,7 +95,7 @@ void add_register(lc3_machine_state * lc3, lc3_instruction instruction){
   
   lc3->register_array[dr] = lc3->register_array[sr1] + lc3->register_array[sr2];
   
-  set_flags(lc3, register_array[dr]);
+  set_flags(lc3, lc3->register_array[dr]);
 }
 
 void add_immediate(lc3_machine_state * lc3, lc3_instruction instruction){
@@ -105,7 +106,7 @@ void add_immediate(lc3_machine_state * lc3, lc3_instruction instruction){
 
   lc3->register_array[dr] = lc3->register_array[sr1] + immediate;
   
-  set_flags(lc3, register_array[dr]);
+  set_flags(lc3, lc3->register_array[dr]);
 
 }
 
@@ -117,7 +118,7 @@ void and_register(lc3_machine_state * lc3, lc3_instruction instruction){
   
   lc3->register_array[dr] = lc3->register_array[sr1] & lc3->register_array[sr2];
   
-  set_flags(lc3, register_array[dr]);
+  set_flags(lc3, lc3->register_array[dr]);
 }
 
 void and_immediate(lc3_machine_state * lc3, lc3_instruction instruction){
@@ -127,12 +128,11 @@ void and_immediate(lc3_machine_state * lc3, lc3_instruction instruction){
   uint16_t immediate = sext(instruction.add_and_imm.immediate, 4);
   
   lc3->register_array[dr] = lc3->register_array[sr1] & immediate;
-  lc3->pc += 1;
-  set_flags(lc3, register_array[dr]);
+  set_flags(lc3, lc3->register_array[dr]);
 
 }
 
-void br(lc3_machine_state * lc3, lc3_insruction instruction){
+void br(lc3_machine_state * lc3, lc3_instruction instruction){
   lc3->pc += 1; //i should be incrementing this here right?
   if((lc3->nzp & instruction.br.nzp) != 0){
 
@@ -158,7 +158,7 @@ void jsr_imm(lc3_machine_state * lc3, lc3_instruction instruction){
 
 }
 
-void jsr_reg(lc3_machine_state * lc3, instruction instruction){
+void jsr_reg(lc3_machine_state * lc3, lc3_instruction instruction){
   lc3->pc += 1;
   lc3->register_array[7] = lc3->pc;
 
@@ -172,6 +172,7 @@ void ld(lc3_machine_state * lc3, lc3_instruction instruction){
 
   lc3->register_array[instruction.ld_ldi.dr] = lc3->memory[lc3->pc + pc_offset];
 
+  uint16_t dr = instruction.ld_ldi.dr;
   set_flags(lc3, lc3->register_array[dr]);
 
 }
@@ -184,6 +185,7 @@ void ldi(lc3_machine_state * lc3, lc3_instruction instruction){
   uint16_t memory_index = lc3->memory[lc3->pc + pc_offset];
   lc3->register_array[instruction.ld_ldi.dr] = lc3->memory[memory_index];
 
+  uint16_t dr = instruction.ld_ldi.dr;
   set_flags(lc3, lc3->register_array[dr]);
 
 }
@@ -228,14 +230,14 @@ void ret(lc3_machine_state * lc3, lc3_instruction instruction){
   lc3->pc = lc3->register_array[7];
 }
 
-void st(lc3_machine * lc3, lc3_instruction instruction){
+void st(lc3_machine_state* lc3, lc3_instruction instruction){
   lc3->pc += 1;
   uint16_t sr = instruction.st_sti.sr;
   uint16_t pc_offset = sext(instruction.st_sti.pc_offset, 8);
   lc3->memory[lc3->pc + pc_offset] = lc3->register_array[sr];
 }
 
-void sti(lc3_machine * lc3, lc3_instruction instruction){
+void sti(lc3_machine_state * lc3, lc3_instruction instruction){
   lc3->pc += 1;
   uint16_t sr = instruction.st_sti.sr;
   uint16_t pc_offset = sext(instruction.st_sti.pc_offset, 8);
@@ -243,7 +245,7 @@ void sti(lc3_machine * lc3, lc3_instruction instruction){
   lc3->memory[memory_index] = lc3->register_array[sr];
 }
 
-void str(lc3_machine * lc3, lc3_instruction instruction){
+void str(lc3_machine_state * lc3, lc3_instruction instruction){
   lc3->pc += 1;
   uint16_t offset = sext(instruction.str.offset, 5);
   uint16_t base_r = instruction.str.base_r;
@@ -265,7 +267,6 @@ void set_flags(lc3_machine_state * lc3, uint16_t reg_val){
 }
 
 uint16_t sext(uint16_t offset, uint16_t sign_bit){
-  uint16_t offset = offset;
   uint16_t signbit_bitmask = 0x01 << sign_bit;
 
   uint16_t one_extend_bitmask = ~((0x01 << sign_bit)-1);
@@ -275,4 +276,12 @@ uint16_t sext(uint16_t offset, uint16_t sign_bit){
   }
 
   return offset;
+}
+
+void invalid_opcode() {
+    printf("Invalid opcode.\n");
+}
+
+void add_test(){
+  
 }

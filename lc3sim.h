@@ -1,7 +1,8 @@
-#ifdef  LC3_SIMULATOR_H
-#define LC3_SIMULATOR_H
+#ifndef  LC3_SIMULATOR_H
+#define  LC3_SIMULATOR_H
 
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define LC3_REGISTER_COUNT        8
@@ -20,91 +21,90 @@
 // State.
 typedef struct {
   uint16_t register_array[LC3_REGISTER_COUNT];
-  uint16_t pc = LC3_ENTRY_POINT;
+  uint16_t pc;
   uint8_t nzp;
   uint16_t * memory;
 } lc3_machine_state;
 
 typedef union {
   uint16_t flat;
-  struct opcode_only {
+  struct opcode_only_type {
     uint16_t unused : 12;
     uint16_t opcode : 4;
-  };
-  struct add_and_reg {
+  } opcode_only;
+  struct add_and_reg_type {
     uint16_t sr2 : 3;
     uint16_t unused : 2;
     uint16_t selection_bit : 1;
     uint16_t sr1 : 3;
     uint16_t dr : 3;
     uint16_t opcode : 4;
-  };
-  struct add_and_imm {
+  } add_and_reg;
+  struct add_and_imm_type {
     uint16_t immediate : 5;
     uint16_t selection_bit : 1;
     uint16_t sr1 : 3;
     uint16_t dr : 3;
     uint16_t opcode : 4;
-  };
-  struct br{
+  } add_and_imm;
+  struct br_type {
     uint16_t pc_offset : 9;
     uint8_t nzp : 3;
     uint16_t opcode : 4;
-  }
-  struct jmp{
-    uint16_t unused : 6;
-    uint16_t base_r : 3;
-    uint16_t unused : 3;
-    uint16_t opcode : 4;
-  }
-  struct jsr_imm{
+  } br;
+  struct jmp_type{
+    uint16_t unused6 : 6;
+    uint16_t base_r  : 3;
+    uint16_t unused3 : 3;
+    uint16_t opcode  : 4;
+  } jmp;
+  struct jsr_imm_type{
     uint16_t pc_offset : 11;
     uint16_t selection_bit : 1;
     uint16_t opcode : 4; 
-  }
-  struct jsr_reg{
-    uint16_t unused : 6;
-    uint16_t base_r : 3;
-    uint16_t unused : 2;
+  } jsr_imm;
+  struct jsr_reg_type {
+    uint16_t unused6 : 6;
+    uint16_t base_r  : 3;
+    uint16_t unused2 : 2;
     uint16_t selection_bit : 1;
-    uint16_t opcode : 4;
-  }
-  struct ld_ldi{
+    uint16_t opcode  : 4;
+  } jsr_reg;
+  struct ld_ldi_type {
     uint16_t pc_offset : 9;
     uint16_t dr : 3;
     uint16_t opcode : 4;
-  }
-  struct ldr{
+  } ld_ldi;
+  struct ldr_type {
     uint16_t offset : 6;
     uint16_t base_r : 3;
     uint16_t dr : 3;
     uint16_t opcode : 4;
-  }
-  struct lea{
+  } ldr;
+  struct lea_type {
     uint16_t pc_offset : 9;
     uint16_t dr : 3;
     uint16_t opcode : 4;
-  }
-  
-  struct not_ret{
+  } lea;
+  struct not_ret_type {
     uint16_t unused : 6;
     uint16_t sr : 3;
     uint16_t dr : 3;
     uint16_t opcode : 4;
-  }
-
-  struct st_sti{
+  } not_ret;
+  struct st_sti_type {
     uint16_t pc_offset : 9;
     uint16_t sr : 3;
     uint16_t opcode : 4;
-  }
-
-  struct str{
+  } st_sti;
+  struct str_type {
     uint16_t offset : 6;
     uint16_t base_r : 3;
     uint16_t sr : 3;
     uint16_t opcode : 4;
-  }
+  } str;
+} lc3_instruction;
+
 // Instructions
 #define ADD_OPCODE 0b0001
 #define AND_OPCODE 0b0101
@@ -119,9 +119,6 @@ typedef union {
 #define ST_OPCODE 0b0011
 #define STI_OPCODE 0b1011
 #define STR_OPCODE 0b0111
-
-  
-} lc3_instruction;
 
 // does it normally sext with 0s?
 // Forward declarations
@@ -147,6 +144,7 @@ void ret(lc3_machine_state * lc3, lc3_instruction instruction);
 void st(lc3_machine_state * lc3, lc3_instruction instruction);
 void sti(lc3_machine_state * lc3, lc3_instruction instruction);
 void str(lc3_machine_state * lc3, lc3_instruction instruction);
+void invalid_opcode(void);
 
 #endif
 

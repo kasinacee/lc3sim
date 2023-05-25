@@ -4,9 +4,11 @@
 #include "lc3sim.h"
 
 void print_register_state(lc3_machine_state * state) {
+    printf("----------------");
     for (size_t i = 0; i < LC3_REGISTER_COUNT; i++) {
-        printf("Register %d: 0x%x\n", i, state->register_array[i]);
+        printf("Register %ld: 0x%x\n", i, state->register_array[i]);
     }
+    printf("----------------");
 }
 
 int main(int argc, char** argv) {
@@ -28,7 +30,7 @@ int main(int argc, char** argv) {
     //
     for (size_t i = 0; i < 5; i++) {
         run_next_instruction(&lc3);
-        print_register_state(&lc3)
+        print_register_state(&lc3);
     }
 
     return 0;
