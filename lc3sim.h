@@ -16,11 +16,16 @@
 #define BIT4_MASK 0x0010
 #define ONE_EXTEND 0xFFE0
 #define BIT8_MASK 0x0100
+#define FAIL 0
+#define SUCCESS 1
+#define PRINT_REGISTERS 0  // 1 to print registers debugging info
+
+
 
 
 // State.
 typedef struct {
-  uint16_t register_array[LC3_REGISTER_COUNT];
+  int16_t register_array[LC3_REGISTER_COUNT];
   uint16_t pc;
   uint8_t nzp;
   uint16_t * memory;
@@ -49,7 +54,7 @@ typedef union {
   } add_and_imm;
   struct br_type {
     uint16_t pc_offset : 9;
-    uint8_t nzp : 3;
+    uint16_t nzp : 3;  // gave a weird bug when i set the type as uint8_t
     uint16_t opcode : 4;
   } br;
   struct jmp_type{
@@ -124,8 +129,8 @@ typedef union {
 // Forward declarations
 void lc3_init(lc3_machine_state * lc3);
 void run_next_instruction(lc3_machine_state * lc3);
-void set_flags(lc3_machine_state * lc3, uint16_t reg_val);
-uint16_t sext(uint16_t offset, uint16_t sign_bit);
+void set_flags(lc3_machine_state * lc3, int16_t reg_val);
+int16_t sext(int16_t offset, uint16_t sign_bit);
 
 void add_register(lc3_machine_state * lc3, lc3_instruction instruction);
 void add_immediate(lc3_machine_state * lc3, lc3_instruction instruction);
@@ -146,5 +151,32 @@ void sti(lc3_machine_state * lc3, lc3_instruction instruction);
 void str(lc3_machine_state * lc3, lc3_instruction instruction);
 void invalid_opcode(void);
 
+//tests
+void run_tests(lc3_machine_state * lc3);
+int add_test(lc3_machine_state *lc3);
+int add_test1(lc3_machine_state * lc3);
+int add_test2(lc3_machine_state * lc3);
+int and_test(lc3_machine_state * lc3);
+int BRn_test(lc3_machine_state * lc3);
+int jmp_test(lc3_machine_state * lc3);
+int jsr_test(lc3_machine_state * lc3);
+int jsrr_test(lc3_machine_state * lc3);
+int ld_test(lc3_machine_state * lc3);
+int ldi_test(lc3_machine_state * lc3);
+int ldr_test(lc3_machine_state * lc3);
+int lea_test(lc3_machine_state * lc3);
+int not_test(lc3_machine_state * lc3);
+int ret_test(lc3_machine_state * lc3);
+int st_test(lc3_machine_state * lc3);
+int sti_test(lc3_machine_state * lc3);
+int str_test(lc3_machine_state * lc3);
+
+
+
+
+
+void run_print_instructions(lc3_machine_state * state, size_t num);
+void print_register_state(lc3_machine_state * state);
+void reset_pc(lc3_machine_state * lc3);
 #endif
 
